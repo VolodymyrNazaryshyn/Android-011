@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Android-011</string>
+    <string name="button_add">Add !</string>
+    <string name="button_delete">Delete !</string>
+</resources>
