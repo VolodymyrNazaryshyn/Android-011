@@ -2,6 +2,7 @@ package step.learning.course;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -14,29 +15,22 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); // inflate - InitializeComponent
 
-        Button buttonAdd = findViewById(R.id.button);
-        buttonAdd.setOnClickListener(this::buttonAddMarkClick);
-
-        Button buttonRemove = findViewById(R.id.button2);
-        buttonRemove.setOnClickListener(this::buttonRemoveMarkClick);
+        findViewById(R.id.button_calc).setOnClickListener(this::buttonCalcClick);
     }
 
-    private void buttonAddMarkClick(View view) {
-        TextView textHello = findViewById(R.id.text_hello);
-        String txt = textHello.getText().toString();
-        txt += "!";
-        textHello.setText(txt);
-    }
-
-    private void buttonRemoveMarkClick(View view) {
-        TextView textHello = findViewById(R.id.text_hello);
-        String txt = textHello.getText().toString();
-        if (txt.contains("!")) {
-            txt = txt.substring(0, txt.length() - 1);
-            textHello.setText(txt);
-        }
+    private void buttonCalcClick(View view) {
+        Intent activityIntent = new Intent(MainActivity.this, CalcActivity.class);
+        startActivity(activityIntent);
     }
 }
+/*
+    Запуск дополнительных активностей
+    1. создаем новую активность как ресурс (ПКМ - new - Activity - Empty Activity)
+    2. Проверяем регистрацию новой активности в манифесте, добавляем
+        android:parentActivityName=".MainActivity"
+        это укажет иерархию и на активности будет кнопка "назад", возвращающая по иерархии
+    3. см. buttonCalcClick
+*/
 /*
 Андроид Студия
 1. IDE (Type - Standard)
