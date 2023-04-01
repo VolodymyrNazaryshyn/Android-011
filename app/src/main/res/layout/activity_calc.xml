@@ -58,19 +58,49 @@
             <Button
                 android:id="@+id/calc_btn_percent"
                 style="@style/calc_btn_fn_style"
-                android:text="@string/calc_btn_percent_text" />
+                android:textSize="20sp"
+            android:text="@string/calc_btn_percent_text" />
             <Button
                 android:id="@+id/calc_btn_ce"
                 style="@style/calc_btn_fn_style"
+                android:textSize="20sp"
                 android:text="@string/calc_btn_ce_text" />
             <Button
                 android:id="@+id/calc_btn_clear"
                 style="@style/calc_btn_fn_style"
+                android:textSize="20sp"
                 android:text="@string/calc_btn_clear_text" />
             <Button
                 android:id="@+id/calc_btn_backspace"
                 style="@style/calc_btn_fn_style"
+                android:textSize="20sp"
                 android:text="@string/calc_btn_backspace_text" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <Button
+                android:id="@+id/calc_btn_inverse"
+                style="@style/calc_btn_fn_style"
+                android:textSize="21sp"
+                android:text="@string/calc_btn_inverse_text" />
+            <Button
+                android:id="@+id/calc_btn_square"
+                style="@style/calc_btn_fn_style"
+                android:textSize="21sp"
+                android:text="@string/calc_btn_square_text" />
+            <Button
+                android:id="@+id/calc_btn_root"
+                style="@style/calc_btn_fn_style"
+                android:textSize="21sp"
+                android:text="@string/calc_btn_root_text" />
+            <Button
+                android:id="@+id/calc_btn_divide"
+                style="@style/calc_btn_fn_style"
+                android:textSize="21sp"
+                android:text="@string/calc_btn_divide_text" />
         </TableRow>
 
     </TableLayout>
