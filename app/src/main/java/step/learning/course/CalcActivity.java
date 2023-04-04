@@ -1,7 +1,6 @@
 package step.learning.course;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.View;
@@ -9,25 +8,27 @@ import android.widget.Button;
 import android.widget.TextView;
 
 public class CalcActivity extends AppCompatActivity {
-
     private TextView tvHistory;
     private TextView tvResult;
+    String commaSign;
     String minusSign;
     String zeroSymbol;
+    int digitCount; // счетчик цифр
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calc);
 
+        commaSign = getString(R.string.calc_comma_sign);
         minusSign = getString(R.string.calc_minus_sign);
         zeroSymbol = getString(R.string.calc_btn_0_text);
+        digitCount = 0;
 
         tvHistory = findViewById(R.id.tv_history);
         tvResult = findViewById(R.id.tv_result);
 
         tvHistory.setText("");
-        tvResult.setText(R.string.calc_btn_0_text);
         displayResult("");
 
         // String[] suffixes = {"one", "two"};
@@ -42,6 +43,16 @@ public class CalcActivity extends AppCompatActivity {
         }
         findViewById(R.id.calc_btn_backspace).setOnClickListener(this::backspaceClick);
         findViewById(R.id.calc_btn_plus_minus).setOnClickListener(this::plusMinusClick);
+        findViewById(R.id.calc_btn_comma).setOnClickListener(this::commaClick);
+    }
+
+    private void commaClick(View view) {
+        String result = tvResult.getText().toString();
+        if (digitCount >= 10 || result.contains(commaSign)) {
+            return; // символ "," не ставиться если уже он есть или количество цифр > 10
+        }
+        result += commaSign;
+        displayResult(result);
     }
 
     private void plusMinusClick(View view) {
@@ -61,13 +72,16 @@ public class CalcActivity extends AppCompatActivity {
 
     private void backspaceClick(View view) {
         String result = tvResult.getText().toString();
+        if(!result.endsWith(commaSign)) {
+            digitCount--; // уменьшаем счетчик цифр если последний символ не ","
+        }
         result = result.substring(0, result.length() - 1);
         displayResult(result);
     }
 
     private void digitClick(View view) {
         String result = tvResult.getText().toString();
-        if(result.length() >= 10) {
+        if(digitCount >= 10) {
             return;
         }
         String digit = ((Button) view).getText().toString();
@@ -75,6 +89,7 @@ public class CalcActivity extends AppCompatActivity {
             result = "";
         }
         result += digit;
+        digitCount++; // увеличиваем счетчик цифр
         displayResult(result);
     }
 
@@ -85,9 +100,3 @@ public class CalcActivity extends AppCompatActivity {
         tvResult.setText(result);
     }
 }
-/*
-Д.З. Реализовать работу кнопки "," (десятичная запятая)
-- символ запятой задается ресурсами (подобрать симпатичный символ)
-- запятая в числе только одна
-- в общий лимит цифр числа (10 цифр) символы "-" и "," не включается
- */

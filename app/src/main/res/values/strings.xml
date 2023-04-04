@@ -31,5 +31,6 @@
     <string name="calc_btn_8_text">8</string>
     <string name="calc_btn_9_text">9</string>
     <string name="calc_minus_sign">\u2212</string>
+    <string name="calc_comma_sign">\u002C</string>
 
 </resources>
