@@ -6,6 +6,9 @@
     <string name="button_calc_text">Calculator</string>
 
     <!-- Calc Activity -->
+    <string name="calc_error_parse">Argument parse error</string>
+    <string name="calc_error_zero">Division by zero</string>
+    <string name="calc_error_sqrt">Negative under root</string>
     <string name="calc_btn_percent_text">%</string>
     <string name="calc_btn_ce_text">CE</string>
     <string name="calc_btn_clear_text">C</string>
@@ -20,7 +23,7 @@
     <string name="calc_btn_plus_minus_text">\u207A\u2215\u208B</string>
     <string name="calc_btn_comma_text">,</string>
     <string name="calc_btn_equal_text">\uFF1D</string>
-    <string name="calc_btn_0_text">0</string>
+    <string name="calc_btn_0_text">\u0298</string>
     <string name="calc_btn_1_text">1</string>
     <string name="calc_btn_2_text">2</string>
     <string name="calc_btn_3_text">3</string>
