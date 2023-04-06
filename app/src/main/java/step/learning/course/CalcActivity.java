@@ -48,6 +48,32 @@ public class CalcActivity extends AppCompatActivity {
         findViewById(R.id.calc_btn_clear).setOnClickListener(this::clearClick);
         findViewById(R.id.calc_btn_ce).setOnClickListener(this::clearEditClick);
         findViewById(R.id.calc_btn_square).setOnClickListener(this::squareClick);
+        findViewById(R.id.calc_btn_inverse).setOnClickListener(this::inverseClick);
+    }
+
+    private void inverseClick(View view) {
+        String result = tvResult.getText().toString();
+        double arg;
+        try {
+            arg = Double.parseDouble(
+                    result
+                            .replace(minusSign, "-")
+                            .replaceAll(zeroSymbol, "0")
+                            .replace(commaSign, ".")
+            );
+        }
+        catch (NumberFormatException | NullPointerException ignored) {
+            Toast.makeText(
+                    this,
+                    R.string.calc_error_parse,
+                    Toast.LENGTH_SHORT)
+                .show();
+            return;
+        }
+        tvHistory.setText("1/" + result + " =");
+        arg = 1 / arg;
+        displayResult(arg);
+        needClear = true;
     }
 
     private void squareClick(View view) {
@@ -73,20 +99,15 @@ public class CalcActivity extends AppCompatActivity {
         arg *= arg;
         displayResult(arg);
         needClear = true;
-        /*
-        Д.З. Поле вычисления результата операции "квадрат" при нажатии "backspace"
-        должен полностью очищаться экран и история.
-        При начале ввода (после операции) также должна стираться история.
-        Реализовать операцию 1/х (инверсию)
-         */
     }
 
     private void clearClick(View view) { // C
         tvHistory.setText("");
-        displayResult("");
+        clearEditClick(view);
     }
 
     private void clearEditClick(View view) { // CE
+        digitCount = 0;
         displayResult("");
     }
 
@@ -115,6 +136,11 @@ public class CalcActivity extends AppCompatActivity {
     }
 
     private void backspaceClick(View view) {
+        if (needClear) {
+            clearClick(view);
+            needClear = false;
+            return;
+        }
         String result = tvResult.getText().toString();
         if(!result.endsWith(commaSign)) {
             digitCount--; // уменьшаем счетчик цифр если последний символ не ","
@@ -125,14 +151,16 @@ public class CalcActivity extends AppCompatActivity {
 
     private void digitClick(View view) {
         String result = tvResult.getText().toString();
+        if(result.equals(zeroSymbol) || needClear) {
+            result = "";
+            needClear = false;
+            digitCount = 0;
+            tvHistory.setText("");
+        }
         if(digitCount >= 10) {
             return;
         }
         String digit = ((Button) view).getText().toString();
-        if(result.equals(zeroSymbol) || needClear) {
-            result = "";
-            needClear = false;
-        }
         result += digit;
         digitCount++; // увеличиваем счетчик цифр
         displayResult(result);
