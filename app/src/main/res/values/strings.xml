@@ -6,6 +6,8 @@
     <string name="button_calc_text">Calculator</string>
 
     <!-- Calc Activity -->
+    <string name="calc_square_history">(%s)² =</string>
+    <string name="calc_inverse_history">\u215F\u200A(%s) =</string>
     <string name="calc_error_parse">Argument parse error</string>
     <string name="calc_error_zero">Division by zero</string>
     <string name="calc_error_sqrt">Negative under root</string>
