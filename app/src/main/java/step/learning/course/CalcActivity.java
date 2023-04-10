@@ -16,8 +16,14 @@ public class CalcActivity extends AppCompatActivity {
     private String commaSign;
     private String minusSign;
     private String zeroSymbol;
+    private String plusSymbol;
+    private String minusSymbol;
+    private String multiplicationSymbol;
+    private String divideSymbol;
     private boolean needClear; // необходимо почистить экран при вводе новой цифры
     private int digitCount; // счетчик цифр
+    private String operator; // +, -, *, /
+    private String oldNumber; // число, стоящее до оператора
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +33,13 @@ public class CalcActivity extends AppCompatActivity {
         commaSign = getString(R.string.calc_comma_sign);
         minusSign = getString(R.string.calc_minus_sign);
         zeroSymbol = getString(R.string.calc_btn_0_text);
+        plusSymbol = getString(R.string.calc_btn_plus_text);
+        minusSymbol = getString(R.string.calc_btn_minus_text);
+        multiplicationSymbol = getString(R.string.calc_btn_multiplication_text);
+        divideSymbol = getString(R.string.calc_btn_divide_text);
         digitCount = 0;
+        operator = "";
+        oldNumber = "";
 
         tvHistory = findViewById(R.id.tv_history);
         tvResult = findViewById(R.id.tv_result);
@@ -51,6 +63,13 @@ public class CalcActivity extends AppCompatActivity {
         findViewById(R.id.calc_btn_ce).setOnClickListener(this::clearEditClick);
         findViewById(R.id.calc_btn_square).setOnClickListener(this::squareClick);
         findViewById(R.id.calc_btn_inverse).setOnClickListener(this::inverseClick);
+        findViewById(R.id.calc_btn_percent).setOnClickListener(this::percentClick);
+        findViewById(R.id.calc_btn_root).setOnClickListener(this::rootClick);
+        findViewById(R.id.calc_btn_plus).setOnClickListener(this::operationClick);
+        findViewById(R.id.calc_btn_minus).setOnClickListener(this::operationClick);
+        findViewById(R.id.calc_btn_multiplication).setOnClickListener(this::operationClick);
+        findViewById(R.id.calc_btn_divide).setOnClickListener(this::operationClick);
+        findViewById(R.id.calc_btn_equal).setOnClickListener(this::equalClick);
     }
 
     // При изменении конфигурации устройства перезапускается активность и данные исчезают
@@ -64,6 +83,10 @@ public class CalcActivity extends AppCompatActivity {
         // добавляем к сохраняемым данным свои значения
         savingState.putCharSequence("history", tvHistory.getText());
         savingState.putCharSequence("result", tvResult.getText());
+        savingState.putBoolean("needClear", needClear);
+        savingState.putInt("digitCount", digitCount);
+        savingState.putCharSequence("operator", operator);
+        savingState.putCharSequence("oldNumber", oldNumber);
     }
     // Вызов при восстановлении конфигурации
     @Override
@@ -73,33 +96,149 @@ public class CalcActivity extends AppCompatActivity {
 
         tvHistory.setText(savedState.getCharSequence("history"));
         tvResult.setText(savedState.getCharSequence("result"));
+        needClear = savedState.getBoolean("needClear");
+        digitCount = savedState.getInt("digitCount");
+        operator = savedState.getCharSequence("operator").toString();
+        oldNumber = savedState.getCharSequence("oldNumber").toString();
     }
 
-    /*
-	Д.З. Реализовать сохранение и восстановление (при изменении конфигурации)
-	всех необходимых значений, влияющих на состояние калькулятора
-	* Завершить калькулятор
-    */
+    private void equalClick(View view) {
+        String newNumber = tvResult.getText().toString();
+
+        if (!oldNumber.equals("") && !operator.equals("")) {
+            tvHistory.setText("");
+            tvHistory.setText(oldNumber + " " + operator);
+        }
+
+        if (operator.equals("")) {
+            tvHistory.setText(
+                    getString(
+                            R.string.calc_equal_one_number_history,
+                            newNumber
+                    )
+            );
+            return;
+        }
+
+        needClear = true;
+
+        if (newNumber.endsWith(commaSign)) {
+            tvHistory.setText(
+                getString(
+                        R.string.calc_equal_one_number_history,
+                        newNumber.substring(0, newNumber.length() - 1)
+                )
+            );
+            return;
+        }
+
+        double newArg = parseDoubleFromText(newNumber);
+        if (newArg == 0) return;
+        double oldArg = parseDoubleFromText(oldNumber);
+        if (oldArg == 0) return;
+
+        double result = 0.0;
+
+        switch (operator) {
+            case "+": result = oldArg + newArg; break;
+            case "-": result = oldArg - newArg; break;
+            case "*": result = oldArg * newArg; break;
+            case "/": result = oldArg / newArg; break;
+        }
+        tvHistory.setText(
+                getString(
+                        R.string.calc_equal_history,
+                        tvHistory.getText().toString(),
+                        newNumber
+                )
+        );
+        displayResult(result);
+    }
+
+    private void operationClick(View view) {
+        needClear = true;
+        oldNumber = tvResult.getText().toString();
+
+        switch (view.getId()) {
+            case R.id.calc_btn_plus: operator = "+"; break;
+            case R.id.calc_btn_minus: operator = "-"; break;
+            case R.id.calc_btn_multiplication: operator = "*"; break;
+            case R.id.calc_btn_divide: operator = "/"; break;
+        }
+
+        operator = operator
+                .replace("+", plusSymbol)
+                .replace("-", minusSymbol)
+                .replace("*", multiplicationSymbol)
+                .replace("/", divideSymbol);
+
+        if (oldNumber.endsWith(commaSign)) {
+            tvHistory.setText(
+                getString(
+                    R.string.calc_operation_history,
+                    oldNumber.substring(0, oldNumber.length() - 1),
+                    operator
+                )
+            );
+        }
+        else {
+            tvHistory.setText(
+                getString(
+                    R.string.calc_operation_history,
+                    oldNumber,
+                    operator
+                )
+            );
+        }
+
+        operator = operator
+                .replace(plusSymbol,"+")
+                .replace(minusSymbol, "-")
+                .replace(multiplicationSymbol, "*")
+                .replace(divideSymbol, "/");
+    }
+
+    private void rootClick(View view) {
+        String result = tvResult.getText().toString();
+        double arg = parseDoubleFromText(result);
+        if (arg == 0) return;
+        tvHistory.setText(getString(R.string.calc_root_history, result));
+        arg = Math.sqrt(arg);
+        displayResult(arg);
+        needClear = true;
+    }
+
+    private void percentClick(View view) {
+        if (operator.equals("")) {
+            String result = tvResult.getText().toString();
+            double arg = parseDoubleFromText(result);
+            if (arg == 0) return;
+            arg /= 100;
+            displayResult(arg); // 200% = 2
+            needClear = true;
+        }
+        else {
+            String newNumber = tvResult.getText().toString();
+            double newArg = parseDoubleFromText(newNumber);
+            if (newArg == 0) return;
+            double oldArg = parseDoubleFromText(oldNumber);
+            if (oldArg == 0) return;
+
+            switch (operator) {
+                case "+": newArg = oldArg + oldArg * newArg / 100; break; // 200 + 5% = 210
+                case "-": newArg = oldArg - oldArg * newArg / 100; break; // 200 - 5% = 190
+                case "*": newArg = oldArg * newArg / 100; break;
+                case "/": newArg = oldArg / newArg * 100; break;
+            }
+            displayResult(newArg);
+            operator = "";
+        }
+    }
 
     private void inverseClick(View view) {
         String result = tvResult.getText().toString();
-        double arg;
-        try {
-            arg = Double.parseDouble(
-                    result
-                            .replace(minusSign, "-")
-                            .replaceAll(zeroSymbol, "0")
-                            .replace(commaSign, ".")
-            );
-        }
-        catch (NumberFormatException | NullPointerException ignored) {
-            Toast.makeText(
-                    this,
-                    R.string.calc_error_parse,
-                    Toast.LENGTH_SHORT)
-                .show();
-            return;
-        }
+        double arg = parseDoubleFromText(result);
+        if (arg == 0) return;
         tvHistory.setText(getString(R.string.calc_inverse_history, result));
         arg = 1 / arg;
         displayResult(arg);
@@ -108,23 +247,8 @@ public class CalcActivity extends AppCompatActivity {
 
     private void squareClick(View view) {
         String result = tvResult.getText().toString();
-        double arg;
-        try {
-            arg = Double.parseDouble(
-                    result
-                            .replace(minusSign, "-")
-                            .replaceAll(zeroSymbol, "0")
-                            .replace(commaSign, ".")
-            );
-        }
-        catch (NumberFormatException | NullPointerException ignored) {
-            Toast.makeText(                     // Всплывающее сообщение
-                    this,                       // контекст - родительская активность
-                    R.string.calc_error_parse,  // текст либо ресурс
-                    Toast.LENGTH_SHORT)         // длительность (во времени)
-                .show();                        // !! не забывать - запуск тоста
-            return;
-        }
+        double arg = parseDoubleFromText(result);
+        if (arg == 0) return;
         tvHistory.setText(getString(R.string.calc_square_history, result));
         arg *= arg;
         displayResult(arg);
@@ -138,6 +262,8 @@ public class CalcActivity extends AppCompatActivity {
 
     private void clearEditClick(View view) { // CE
         digitCount = 0;
+        operator = "";
+        oldNumber = "";
         displayResult("");
     }
 
@@ -185,7 +311,6 @@ public class CalcActivity extends AppCompatActivity {
             result = "";
             needClear = false;
             digitCount = 0;
-            tvHistory.setText("");
         }
         if(digitCount >= 10) {
             return;
@@ -196,8 +321,8 @@ public class CalcActivity extends AppCompatActivity {
         displayResult(result);
     }
 
-    private void  displayResult(String result) {
-        if("".equals(result) || minusSign.equals(result)) {
+    private void displayResult(String result) {
+        if ("".equals(result) || minusSign.equals(result)) {
             result = zeroSymbol;
         }
         tvResult.setText(result);
@@ -210,8 +335,37 @@ public class CalcActivity extends AppCompatActivity {
         result = result
                 .replace("-", minusSign)
                 .replaceAll("0", zeroSymbol)
-                .replace(".", commaSign);
+                .replace(".", commaSign)
+                .replace("+", plusSymbol)
+                .replace("-", minusSymbol)
+                .replace("*", multiplicationSymbol)
+                .replace("/", divideSymbol);
 
         displayResult(result);
+    }
+
+    private double parseDoubleFromText(String text) {
+        double arg;
+        try {
+            arg = Double.parseDouble(
+                    text
+                            .replace(minusSign, "-")
+                            .replaceAll(zeroSymbol, "0")
+                            .replace(commaSign, ".")
+                            .replace(plusSymbol, "+")
+                            .replace(minusSymbol, "-")
+                            .replace(multiplicationSymbol, "*")
+                            .replace(divideSymbol, "/")
+            );
+            return arg;
+        }
+        catch (NumberFormatException | NullPointerException ignored) {
+            Toast.makeText(                             // Всплывающее сообщение
+                            this,                       // контекст - родительская активность
+                            R.string.calc_error_parse,  // текст либо ресурс
+                            Toast.LENGTH_SHORT)         // длительность (во времени)
+                    .show();                            // !! не забывать - запуск тоста
+            return 0;
+        }
     }
 }
