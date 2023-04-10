@@ -27,4 +27,13 @@
         android:paddingVertical="10dp"
         android:text="@string/button_calc_text" />
 
+    <Button
+        android:id="@+id/button_game"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textSize="30sp"
+        android:paddingVertical="10dp"
+        android:text="@string/button_game_text" />
+
 </LinearLayout>

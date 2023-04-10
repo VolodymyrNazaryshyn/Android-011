@@ -16,10 +16,16 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main); // inflate - InitializeComponent
 
         findViewById(R.id.button_calc).setOnClickListener(this::buttonCalcClick);
+        findViewById(R.id.button_game).setOnClickListener(this::buttonGameClick);
     }
 
     private void buttonCalcClick(View view) {
         Intent activityIntent = new Intent(MainActivity.this, CalcActivity.class);
+        startActivity(activityIntent);
+    }
+
+    private void buttonGameClick(View view) {
+        Intent activityIntent = new Intent(MainActivity.this, GameActivity.class);
         startActivity(activityIntent);
     }
 }
