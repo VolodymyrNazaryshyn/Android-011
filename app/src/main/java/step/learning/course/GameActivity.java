@@ -31,11 +31,23 @@ public class GameActivity extends AppCompatActivity {
                                                 Toast.LENGTH_SHORT)
                                         .show();
                             }
+                            @Override
+                            public void onSwipeTop() {
+                                Toast.makeText(
+                                                GameActivity.this,
+                                                "Top",
+                                                Toast.LENGTH_SHORT)
+                                        .show();
+                            }
+                            @Override
+                            public void onSwipeBottom() {
+                                Toast.makeText(
+                                                GameActivity.this,
+                                                "Bottom",
+                                                Toast.LENGTH_SHORT)
+                                        .show();
+                            }
                         }
                 );
     }
 }
-/*
-Реализовать все свайпы
-Подобрать цвета для ячеек с различными значениями
- */
