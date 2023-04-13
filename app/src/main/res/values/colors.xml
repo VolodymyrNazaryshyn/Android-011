@@ -1,23 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Game 2048 Activity -->
-    <color name="game_2048_background">#F9F7EE</color>
-    <color name="game_2048_board_bg">#CDC1B5</color>
-    <color name="game_2048_tile_border">#BBADA0</color>
-    <color name="game_2048_tile_dark_fg">#727371</color>
-    <color name="game_2048_tile_light_fg">#FFFFFF</color>
-    <color name="game_2048_tile_2_bg">#EEE4Da</color>
-    <color name="game_2048_tile_4_bg">#ECE0Ca</color>
-    <color name="game_2048_tile_8_bg">#F4B17A</color>
-    <color name="game_2048_tile_16_bg">#F59575</color>
-    <color name="game_2048_tile_32_bg">#F57C5F</color>
-    <color name="game_2048_tile_64_bg">#F65D3B</color>
-    <color name="game_2048_tile_128_bg">#EDCE71</color>
-    <color name="game_2048_tile_256_bg">#EDCC63</color>
-    <color name="game_2048_tile_512_bg">#EDC651</color>
-    <color name="game_2048_tile_1024_bg">#EEC744</color>
-    <color name="game_2048_tile_2048_bg">#ECC230</color>
-    <color name="game_2048_tile_4096_plus_bg">#3E3C33</color>
+    <!-- Game Activity -->
+    <color name="game_field_bg">#AC9F7E</color>
+    <color name="game_bg_0">#BEAFA0</color>
+    <color name="game_fg_0">#BEAFA0</color>
+    <color name="game_bg_2">#EEE4DA</color>
+    <color name="game_fg_2">#786E64</color>
+    <color name="game_bg_4">#EEE2CE</color>
+    <color name="game_fg_4">#786F65</color>
+    <color name="game_bg_8">#F3B27F</color>
+    <color name="game_fg_8">#F9F6F2</color>
+    <color name="game_bg_16">#F6976B</color>
+    <color name="game_fg_16">#F9F4ED</color>
+    <color name="game_bg_32">#E58266</color>
+    <color name="game_fg_32">#F9F6F1</color>
+    <color name="game_bg_64">#E36848</color>
+    <color name="game_fg_64">#F9F6F1</color>
+    <color name="game_bg_128">#E8D07F</color>
+    <color name="game_fg_128">#F8F6F3</color>
+
+    <color name="game_bg_256">#edcc61</color>
+    <color name="game_fg_256">#F8F6F3</color>
+    <color name="game_bg_512">#edc850</color>
+    <color name="game_fg_512">#F8F6F3</color>
+    <color name="game_bg_1024">#edc53f</color>
+    <color name="game_fg_1024">#F8F6F3</color>
+    <color name="game_bg_2048">#edc22e</color>
+    <color name="game_fg_2048">#F8F6F3</color>
+    <color name="game_bg_4096">#3E3C33</color>
+    <color name="game_fg_4096">#F8F6F3</color>
 
     <!-- Calc Activity -->
     <color name="calc_background">#202020</color>
@@ -30,8 +41,7 @@
     <color name="calc_eq_button_bg">#4CC1FE</color>
     <color name="calc_eq_button_fg">#153647</color>
 
-    <!-- Main Activity -->
-    <color name="purple_200">#CCC0B3</color>
+    <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
     <color name="teal_200">#FF03DAC5</color>

@@ -234,7 +234,7 @@ public class CalcActivity extends AppCompatActivity {
             }
 
             // шаблон вибрации 1 - пауза, 2 - работа, 3 - пауза, 4 - работа, .....
-            long[] vibratePattern = { 0, 200, 100, 200 };
+            long[] vibratePattern = {0, 500, 110, 500, 110, 450, 110, 200, 110, 170, 40, 450, 110, 200, 110, 170, 40, 500};
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 // однократное включение
@@ -260,8 +260,6 @@ public class CalcActivity extends AppCompatActivity {
                         vibrator.vibrate( VibrationEffect.... )
             API >= 26 <
                         vibrator.vibrate()
-
-v.vibrate(new long[]{0, 500, 110, 500, 110, 450, 110, 200, 110, 170, 40, 450, 110, 200, 110, 170, 40, 500}, -1);
  */
         }
         tvHistory.setText(getString(R.string.calc_root_history, result));
