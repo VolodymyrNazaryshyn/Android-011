@@ -18,7 +18,6 @@
     <color name="game_fg_64">#F9F6F1</color>
     <color name="game_bg_128">#E8D07F</color>
     <color name="game_fg_128">#F8F6F3</color>
-
     <color name="game_bg_256">#edcc61</color>
     <color name="game_fg_256">#F8F6F3</color>
     <color name="game_bg_512">#edc850</color>

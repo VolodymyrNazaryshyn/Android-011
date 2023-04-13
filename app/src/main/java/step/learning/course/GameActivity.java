@@ -6,6 +6,7 @@ import android.annotation.SuppressLint;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -95,8 +96,7 @@ public class GameActivity extends AppCompatActivity {
             }
         }
         score = 0;
-        spawnCell();
-        spawnCell();
+        spawnCell(2);
         showField();
     }
 
@@ -115,7 +115,18 @@ public class GameActivity extends AppCompatActivity {
                                     packageName
                             )
                     );
-                    // setTextAppearance не "подтягивает" фоновый цвет
+                }
+                else {
+                    tvCells[i][j].setTextColor( // R.style.GameCell_16
+                            resources.getColor(resources.getIdentifier(
+                                    "game_fg_" + cells[i][j],
+                                    "color",
+                                    packageName
+                            ))
+                    );
+                }
+                // setTextAppearance не "подтягивает" фоновый цвет
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     tvCells[i][j].setBackgroundColor(
                             resources.getColor( // R.color.game_bg_16,
                                     resources.getIdentifier(
@@ -127,12 +138,23 @@ public class GameActivity extends AppCompatActivity {
                             )
                     );
                 }
+                else {
+                    tvCells[i][j].setBackgroundColor(
+                            resources.getColor( // R.color.game_bg_16,
+                                    resources.getIdentifier(
+                                            "game_bg_" + cells[i][j],
+                                            "color",
+                                            packageName
+                                    )
+                            )
+                    );
+                }
             }
-            tvScore.setText(getString(R.string.game_score, String.valueOf(score)));
         }
+        tvScore.setText(getString(R.string.game_score, String.valueOf(score)));
     }
 
-    private boolean spawnCell() {
+    private boolean spawnCell(int n) {
         // собираем данные о пустых ячейках
         List<Coord> coordinates = new ArrayList<>();
         for (int i = 0; i < N; ++i) {
@@ -144,23 +166,20 @@ public class GameActivity extends AppCompatActivity {
         }
         // проверяем есть ли пустые ячейки
         int cnt = coordinates.size();
-        if (cnt == 0) return false;
-        // генерируем случайный индекс
-        int randIndex = random.nextInt(cnt);
-        // извлекаем координаты
-        int x = coordinates.get(randIndex).getX();
-        int y = coordinates.get(randIndex).getY();
-        // ставим в ячейку 2 / 4
-        cells[x][y] = random.nextInt(10) == 0 ? 4 : 2;
+        if (cnt < n) return false;
+
+        for (int i = 0; i < n; ++i) {
+            // генерируем случайный индекс
+            int randIndex = random.nextInt(cnt);
+            // извлекаем координаты
+            int x = coordinates.get(randIndex).getX();
+            int y = coordinates.get(randIndex).getY();
+            // ставим в ячейку 2 / 4
+            cells[x][y] = random.nextInt(10) == 0 ? 4 : 2;
+        }
 
         return true;
     }
-
-    /*
-    Д.З. Провести рефакторинг spawnCell()
-    добавить параметр с кол-вом появляющихся ячеек.
-    * Раеализовать один из ходов (в любую сторону)
-     */
 
     private class Coord {
         private int x;
