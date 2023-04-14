@@ -79,6 +79,7 @@
                 android:orientation="horizontal">
 
                 <Button
+                    android:id="@+id/game_new"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_margin="3dp"

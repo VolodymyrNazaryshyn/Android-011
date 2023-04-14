@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="txt_size_game_cell_2">50sp</dimen>
+    <dimen name="txt_size_game_cell_0">50sp</dimen>
+    <dimen name="txt_size_game_cell_4">50sp</dimen>
+    <dimen name="txt_size_game_cell_8">50sp</dimen>
+    <dimen name="txt_size_game_cell_16">50sp</dimen>
+    <dimen name="txt_size_game_cell_32">50sp</dimen>
+    <dimen name="txt_size_game_cell_64">50sp</dimen>
+    <dimen name="txt_size_game_cell_128">40sp</dimen>
+    <dimen name="txt_size_game_cell_256">40sp</dimen>
+    <dimen name="txt_size_game_cell_512">40sp</dimen>
+    <dimen name="txt_size_game_cell_1024">32sp</dimen>
+    <dimen name="txt_size_game_cell_2048">32sp</dimen>
+    <dimen name="txt_size_game_cell_4096">30sp</dimen>
+</resources>
