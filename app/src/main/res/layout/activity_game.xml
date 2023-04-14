@@ -94,6 +94,7 @@
                     style="?android:attr/buttonBarButtonStyle" />
 
                 <Button
+                    android:id="@+id/game_undo"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_margin="3dp"
