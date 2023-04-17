@@ -18,15 +18,18 @@ import java.util.List;
 import java.util.Random;
 
 public class GameActivity extends AppCompatActivity {
-    private final int N = 4;
-    private final int[][] cells = new int[N][N]; // значения в ячейках поля
-    private final int[][] saves = new int[N][N]; // предыдущий ход
-    private final TextView[][] tvCells = new TextView[N][N]; // ссылки на ячейки поля
+    private final int CELLS_SIZE = 4;
+    private final int[][] cells = new int[CELLS_SIZE][CELLS_SIZE]; // значения в ячейках поля
+    private final int[][] prevCells = new int[CELLS_SIZE][CELLS_SIZE]; // предыдущий ход
+    private final TextView[][] tvCells = new TextView[CELLS_SIZE][CELLS_SIZE]; // ссылки на ячейки поля
     private final Random random = new Random();
 
     private int score;
+    private int prevScore;
     private int bestScore;
+    private int prevBestScore;
     private TextView tvScore;
+    private TextView text;
     private TextView tvBestScore;
     private Animation spawnAnimation;
     private Animation collapseAnimation;
@@ -38,6 +41,7 @@ public class GameActivity extends AppCompatActivity {
         setContentView(R.layout.activity_game);
 
         tvScore = findViewById(R.id.game_tv_score);
+        text = findViewById(R.id.text);
         tvBestScore = findViewById(R.id.game_tv_best_score);
         tvScore.setText(getString(R.string.game_score, "69.6k"));
         tvBestScore.setText(getString(R.string.game_best_score, "69.6k"));
@@ -47,8 +51,8 @@ public class GameActivity extends AppCompatActivity {
         collapseAnimation = AnimationUtils.loadAnimation(this, R.anim.cell_collapse);
         collapseAnimation.reset();
 
-        for (int i = 0; i < N; ++i) {
-            for (int j = 0; j < N; ++j) {
+        for (int i = 0; i < CELLS_SIZE; ++i) {
+            for (int j = 0; j < CELLS_SIZE; ++j) {
                 tvCells[i][j] = findViewById( // R.id.game_cell_12);
                         getResources().getIdentifier(
                                 "game_cell_" + i + j,
@@ -64,8 +68,12 @@ public class GameActivity extends AppCompatActivity {
                         new OnSwipeTouchListener(GameActivity.this) {
                             @Override
                             public void onSwipeRight() {
+                                if (isGaveOver()) {
+                                    text.setText(R.string.game_over);
+                                    return;
+                                }
                                 if (canMoveRight(cells)) {
-                                    saveField();
+                                    updatePrevCells();
                                     moveRight();
                                     spawnCell(1);
                                     showField();
@@ -85,8 +93,12 @@ public class GameActivity extends AppCompatActivity {
                             }
                             @Override
                             public void onSwipeLeft() {
+                                if (isGaveOver()) {
+                                    text.setText(R.string.game_over);
+                                    return;
+                                }
                                 if (canMoveLeft(cells)) {
-                                    saveField();
+                                    updatePrevCells();
                                     moveLeft();
                                     spawnCell(1);
                                     showField();
@@ -106,8 +118,12 @@ public class GameActivity extends AppCompatActivity {
                             }
                             @Override
                             public void onSwipeTop() {
+                                if (isGaveOver()) {
+                                    text.setText(R.string.game_over);
+                                    return;
+                                }
                                 if (canMoveTop(cells)) {
-                                    saveField();
+                                    updatePrevCells();
                                     moveTop();
                                     spawnCell(1);
                                     showField();
@@ -127,8 +143,12 @@ public class GameActivity extends AppCompatActivity {
                             }
                             @Override
                             public void onSwipeBottom() {
+                                if (isGaveOver()) {
+                                    text.setText(R.string.game_over);
+                                    return;
+                                }
                                 if (canMoveBottom(cells)) {
-                                    saveField();
+                                    updatePrevCells();
                                     moveBottom();
                                     spawnCell(1);
                                     showField();
@@ -154,20 +174,21 @@ public class GameActivity extends AppCompatActivity {
         newGame(null);
     }
     private void newGame(View view) {
-        for (int i = 0; i < N; ++i) {
-            for (int j = 0; j < N; ++j) {
+        for (int i = 0; i < CELLS_SIZE; ++i) {
+            for (int j = 0; j < CELLS_SIZE; ++j) {
                 cells[i][j] = 0;
             }
         }
         score = 0;
         spawnCell(2);
         showField();
+        text.setText(R.string.game_description);
     }
     private boolean spawnCell(int n) {
         // собираем данные о пустых ячейках
         List<Coord> coordinates = new ArrayList<>();
-        for (int i = 0; i < N; ++i) {
-            for (int j = 0; j < N; ++j) {
+        for (int i = 0; i < CELLS_SIZE; ++i) {
+            for (int j = 0; j < CELLS_SIZE; ++j) {
                 if (cells[i][j] == 0) {
                     coordinates.add(new Coord(i, j));
                 }
@@ -190,6 +211,10 @@ public class GameActivity extends AppCompatActivity {
         }
 
         return true;
+    }
+    private boolean isGaveOver() {
+        return !canMoveRight(cells) && !canMoveLeft(cells)
+                && !canMoveTop(cells) && !canMoveBottom(cells);
     }
 
     // region [canMove functions]
@@ -271,12 +296,12 @@ public class GameActivity extends AppCompatActivity {
     private boolean moveRight() {
         boolean isMoved = false ;    // [0002]->[0002], [0200]->[0002], [2020]->[0022]->[0004]
 
-        for( int i = 0; i < N; ++i ) {
+        for( int i = 0; i < CELLS_SIZE; ++i ) {
             // сдвиги
             boolean wasReplace;
             do {
                 wasReplace = false;
-                for (int j = N - 1; j > 0; --j) {
+                for (int j = CELLS_SIZE - 1; j > 0; --j) {
                     if (cells[i][j] == 0          // текущая ячейка 0
                             && cells[i][j - 1] != 0) {    // а перед ней - не 0
                         cells[i][j] = cells[i][j - 1];
@@ -288,21 +313,24 @@ public class GameActivity extends AppCompatActivity {
             } while (wasReplace);
 
             // collapse
-            for (int j = N - 1; j > 0; --j) {  // [2202] -> [0222] -> [0204] -> [0024]
+            for (int j = CELLS_SIZE - 1; j > 0; --j) {  // [2202] -> [0222] -> [0204] -> [0024]
                 if (cells[i][j] == cells[i][j - 1] && cells[i][j] != 0) {  // соседние ячейки равны  [2222]
                     score += cells[i][j] + cells[i][j - 1] ;   // счет = сумма всех объединенных ячеек
+                    if (score > bestScore) {
+                        bestScore = score;
+                    }
                     cells[i][j] *= -2 ;  // [2224]; "-" - признак для анимации
                     cells[i][j - 1] = 0 ;   // [2204]
                     isMoved = true ;
                 }
             }  // [0404]  при коллапсе может понадобиться дополнительное смещение
-            for (int j = N - 1; j > 0; --j) {
+            for (int j = CELLS_SIZE - 1; j > 0; --j) {
                 if (cells[i][j] == 0 && cells[i][j - 1] != 0) {
                     cells[i][j] = cells[i][j - 1];
                     cells[i][j - 1] = 0;
                 }
             }
-            for (int j = N - 1; j > 0; --j) {
+            for (int j = CELLS_SIZE - 1; j > 0; --j) {
                 if( cells[i][j] < 0 ) {  // надо включить анимацию
                     cells[i][j] = -cells[i][j] ;
                     tvCells[i][j].startAnimation( collapseAnimation ) ;
@@ -314,12 +342,12 @@ public class GameActivity extends AppCompatActivity {
     private boolean moveLeft() {
         boolean isMoved = false ;
 
-        for( int i = 0; i < N; ++i ) {
+        for( int i = 0; i < CELLS_SIZE; ++i ) {
             // сдвиги
             boolean wasReplace;
             do {
                 wasReplace = false;
-                for (int j = 0; j < N - 1; ++j) {
+                for (int j = 0; j < CELLS_SIZE - 1; ++j) {
                     if (cells[i][j] == 0 && cells[i][j + 1] != 0) {
                         cells[i][j] = cells[i][j + 1];
                         cells[i][j + 1] = 0;
@@ -330,21 +358,24 @@ public class GameActivity extends AppCompatActivity {
             } while (wasReplace);
 
             // collapse
-            for (int j = 0; j < N - 1; ++j) {
+            for (int j = 0; j < CELLS_SIZE - 1; ++j) {
                 if (cells[i][j] == cells[i][j + 1] && cells[i][j] != 0) {
                     score += cells[i][j] + cells[i][j + 1];
+                    if (score > bestScore) {
+                        bestScore = score;
+                    }
                     cells[i][j] *= -2;
                     cells[i][j + 1] = 0;
                     isMoved = true;
                 }
             }
-            for (int j = 0; j < N - 1; ++j) {
+            for (int j = 0; j < CELLS_SIZE - 1; ++j) {
                 if (cells[i][j] == 0 && cells[i][j + 1] != 0) {
                     cells[i][j] = cells[i][j + 1];
                     cells[i][j + 1] = 0;
                 }
             }
-            for (int j = 0; j < N - 1; ++j) {
+            for (int j = 0; j < CELLS_SIZE - 1; ++j) {
                 if (cells[i][j] < 0) {
                     cells[i][j] = -cells[i][j];
                     tvCells[i][j].startAnimation(collapseAnimation);
@@ -356,12 +387,12 @@ public class GameActivity extends AppCompatActivity {
     private boolean moveTop() {
         boolean isMoved = false;
 
-        for (int j = 0; j < N; ++j) {
+        for (int j = 0; j < CELLS_SIZE; ++j) {
             // сдвиги
             boolean wasReplace;
             do {
                 wasReplace = false;
-                for (int i = 0; i < N - 1; ++i) {
+                for (int i = 0; i < CELLS_SIZE - 1; ++i) {
                     if (cells[i][j] == 0 && cells[i + 1][j] != 0) {
                         cells[i][j] = cells[i + 1][j];
                         cells[i + 1][j] = 0;
@@ -372,21 +403,24 @@ public class GameActivity extends AppCompatActivity {
             } while (wasReplace);
 
             // collapse
-            for (int i = 0; i < N - 1; ++i) {
+            for (int i = 0; i < CELLS_SIZE - 1; ++i) {
                 if (cells[i][j] == cells[i + 1][j] && cells[i][j] != 0) {
                     score += cells[i][j] + cells[i + 1][j];
+                    if (score > bestScore) {
+                        bestScore = score;
+                    }
                     cells[i][j] *= -2;
                     cells[i + 1][j] = 0;
                     isMoved = true;
                 }
             }
-            for (int i = 0; i < N - 1; ++i) {
+            for (int i = 0; i < CELLS_SIZE - 1; ++i) {
                 if (cells[i][j] == 0 && cells[i + 1][j] != 0) {
                     cells[i][j] = cells[i + 1][j];
                     cells[i + 1][j] = 0;
                 }
             }
-            for (int i = 0; i < N - 1; ++i) {
+            for (int i = 0; i < CELLS_SIZE - 1; ++i) {
                 if (cells[i][j] < 0) {
                     cells[i][j] = -cells[i][j];
                     tvCells[i][j].startAnimation(collapseAnimation);
@@ -398,12 +432,12 @@ public class GameActivity extends AppCompatActivity {
     private boolean moveBottom() {
         boolean isMoved = false;
 
-        for (int j = 0; j < N; ++j) {
+        for (int j = 0; j < CELLS_SIZE; ++j) {
             // сдвиги
             boolean wasReplace;
             do {
                 wasReplace = false;
-                for (int i = N - 1; i > 0; --i) {
+                for (int i = CELLS_SIZE - 1; i > 0; --i) {
                     if (cells[i][j] == 0 && cells[i - 1][j] != 0) {
                         cells[i][j] = cells[i - 1][j];
                         cells[i - 1][j] = 0;
@@ -414,21 +448,24 @@ public class GameActivity extends AppCompatActivity {
             } while (wasReplace);
 
             // collapse
-            for (int i = N - 1; i > 0; --i) {
+            for (int i = CELLS_SIZE - 1; i > 0; --i) {
                 if (cells[i][j] == cells[i - 1][j] && cells[i][j] != 0) {
                     score += cells[i][j] + cells[i - 1][j];
+                    if (score > bestScore) {
+                        bestScore = score;
+                    }
                     cells[i][j] *= -2;
                     cells[i - 1][j] = 0;
                     isMoved = true;
                 }
             }
-            for (int i = N - 1; i > 0; --i) {
+            for (int i = CELLS_SIZE - 1; i > 0; --i) {
                 if (cells[i][j] == 0 && cells[i - 1][j] != 0) {
                     cells[i][j] = cells[i - 1][j];
                     cells[i - 1][j] = 0;
                 }
             }
-            for (int i = N - 1; i > 0; --i) {
+            for (int i = CELLS_SIZE - 1; i > 0; --i) {
                 if (cells[i][j] < 0) {
                     cells[i][j] = -cells[i][j];
                     tvCells[i][j].startAnimation(collapseAnimation);
@@ -443,8 +480,8 @@ public class GameActivity extends AppCompatActivity {
     private void showField() {
         Resources resources = getResources();
         String packageName = getPackageName();
-        for (int i = 0; i < N; ++i) {
-            for (int j = 0; j < N; ++j) {
+        for (int i = 0; i < CELLS_SIZE; ++i) {
+            for (int j = 0; j < CELLS_SIZE; ++j) {
                 tvCells[i][j].setText(String.valueOf(cells[i][j]));
                 float textSize = resources.getDimension( // R.dimen.txt_size_game_cell_4096
                         resources.getIdentifier(
@@ -498,16 +535,46 @@ public class GameActivity extends AppCompatActivity {
             }
         }
         tvScore.setText(getString(R.string.game_score, String.valueOf(score)));
+        tvBestScore.setText(getString(R.string.game_best_score, String.valueOf(bestScore)));
     }
-    private void saveField() {
-        for (int i = 0; i < N; i++) {
-            System.arraycopy(cells[i], 0, saves[i], 0, N);
+
+    // Делаем копию текущего игрового поля и сохраняем ее в prevCells
+    private void savePrevCells() {
+        for (int i = 0; i < CELLS_SIZE; i++) {
+            System.arraycopy(cells[i], 0, prevCells[i], 0, CELLS_SIZE);
         }
     }
+
+    // Проверяем, не изменилось ли игровое поле, и если да, сохраняем новое состояние
+    private void updatePrevCells() {
+        boolean changed = false;
+        for (int i = 0; i < CELLS_SIZE; i++) {
+            for (int j = 0; j < CELLS_SIZE; j++) {
+                if (cells[i][j] != prevCells[i][j]) {
+                    changed = true;
+                    prevScore = score;
+                    prevBestScore = bestScore;
+                    break;
+                }
+            }
+            if (changed) {
+                break;
+            }
+        }
+        if (changed) {
+            savePrevCells();
+        }
+    }
+
+    // Восстанавливаем предыдущее состояние игрового поля из prevCells
     private void undoMove(View view) {
-        for (int i = 0; i < N; i++) {
-            System.arraycopy(saves[i], 0, cells[i], 0, N);
+        for (int i = 0; i < CELLS_SIZE; i++) {
+            System.arraycopy(prevCells[i], 0, cells[i], 0, CELLS_SIZE);
         }
+        // Восстанавливаем другие переменные состояния игры
+        score = prevScore;
+        bestScore = prevBestScore;
+        showField();
     }
 
     private class Coord {
