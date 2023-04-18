@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Android-011</string>
 
     <string name="button_chat_text">Chat</string>
@@ -21,6 +21,8 @@
     <string name="game_over_dialog_message">Game over! %s\nDo you want to start new game?</string>
     <string name="game_score">score\n%s</string>
     <string name="game_best_score">best\n%s</string>
+    <string name="game_new_best_score_dialog_title">The best score!</string>
+    <string name="game_new_best_score_dialog_message">New best score: %s</string>
     <string name="game_new_btn">new</string>
     <string name="game_undo_btn">undo</string>
 

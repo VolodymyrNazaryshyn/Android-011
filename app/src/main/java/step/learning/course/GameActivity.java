@@ -44,7 +44,6 @@ public class GameActivity extends AppCompatActivity {
     private int prevBestScore;
     private String newBestScoreDialogMessage;
     private TextView tvScore;
-    private TextView text;
     private TextView tvBestScore;
     private Animation spawnAnimation;
     private Animation collapseAnimation;
@@ -57,7 +56,6 @@ public class GameActivity extends AppCompatActivity {
 
         newBestScoreDialogMessage = "";
         tvScore = findViewById(R.id.game_tv_score);
-        text = findViewById(R.id.text);
         tvBestScore = findViewById(R.id.game_tv_best_score);
         tvScore.setText(getString(R.string.game_score, "69.6k"));
         tvBestScore.setText(getString(R.string.game_best_score, "69.6k"));
@@ -84,11 +82,12 @@ public class GameActivity extends AppCompatActivity {
                         new OnSwipeTouchListener(GameActivity.this) {
                             @Override
                             public void onSwipeRight() {
-                                if (isGaveOver()) {
-                                    text.setText(R.string.game_over);
+                                if (isGameOver()) {
+                                    showLoserMessage();
                                     return;
                                 }
                                 if (canMoveRight(cells)) {
+                                    isNewGame = false;
                                     updatePrevCells();
                                     moveRight();
                                     spawnCell(1);
@@ -105,15 +104,17 @@ public class GameActivity extends AppCompatActivity {
                                                     "No Right Move",
                                                     Toast.LENGTH_SHORT)
                                             .show();
+                                    vibrate();
                                 }
                             }
                             @Override
                             public void onSwipeLeft() {
-                                if (isGaveOver()) {
-                                    text.setText(R.string.game_over);
+                                if (isGameOver()) {
+                                    showLoserMessage();
                                     return;
                                 }
                                 if (canMoveLeft(cells)) {
+                                    isNewGame = false;
                                     updatePrevCells();
                                     moveLeft();
                                     spawnCell(1);
@@ -130,15 +131,17 @@ public class GameActivity extends AppCompatActivity {
                                                     "No Left Move",
                                                     Toast.LENGTH_SHORT)
                                             .show();
+                                    vibrate();
                                 }
                             }
                             @Override
                             public void onSwipeTop() {
-                                if (isGaveOver()) {
-                                    text.setText(R.string.game_over);
+                                if (isGameOver()) {
+                                    showLoserMessage();
                                     return;
                                 }
                                 if (canMoveTop(cells)) {
+                                    isNewGame = false;
                                     updatePrevCells();
                                     moveTop();
                                     spawnCell(1);
@@ -155,15 +158,17 @@ public class GameActivity extends AppCompatActivity {
                                                     "No Top Move",
                                                     Toast.LENGTH_SHORT)
                                             .show();
+                                    vibrate();
                                 }
                             }
                             @Override
                             public void onSwipeBottom() {
-                                if (isGaveOver()) {
-                                    text.setText(R.string.game_over);
+                                if (isGameOver()) {
+                                    showLoserMessage();
                                     return;
                                 }
                                 if (canMoveBottom(cells)) {
+                                    isNewGame = false;
                                     updatePrevCells();
                                     moveBottom();
                                     spawnCell(1);
@@ -180,6 +185,7 @@ public class GameActivity extends AppCompatActivity {
                                                     "No Bottom Move",
                                                     Toast.LENGTH_SHORT)
                                             .show();
+                                    vibrate();
                                 }
                             }
                         }
@@ -189,6 +195,30 @@ public class GameActivity extends AppCompatActivity {
         findViewById(R.id.game_undo).setOnClickListener(this::undoMove);
         newGame(null);
     }
+
+    private void vibrate() {
+        Vibrator vibrator;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            VibratorManager vibratorManager = (VibratorManager)
+                    getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
+            vibrator = vibratorManager.getDefaultVibrator();
+        }
+        else {
+            vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        }
+
+        long[] vibratePattern = {0, 500};
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(
+                    VibrationEffect.createWaveform(vibratePattern, -1)
+            );
+        }
+        else {
+            vibrator.vibrate(vibratePattern, -1);
+        }
+    }
+
     private void newGame(View view) {
         for (int i = 0; i < CELLS_SIZE; ++i) {
             for (int j = 0; j < CELLS_SIZE; ++j) {
@@ -207,7 +237,6 @@ public class GameActivity extends AppCompatActivity {
         score = 0;
         spawnCell(2);
         showField();
-        text.setText(R.string.game_description);
     }
     private void spawnCell(int n) {
         // собираем данные о пустых ячейках
@@ -619,9 +648,20 @@ public class GameActivity extends AppCompatActivity {
                 .show();
     }
 
-    private class Coord {
-        private int x;
-        private int y;
+    @SuppressLint("PrivateResource")
+    private void showNewBestScoreMessage() {
+        new AlertDialog.Builder(this, com.google.android.material.R.style.Base_V14_ThemeOverlay_MaterialComponents_Dialog)
+                .setTitle(R.string.game_new_best_score_dialog_title)
+                .setMessage(getString(R.string.game_new_best_score_dialog_message, String.valueOf(bestScore)))
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setCancelable(false)
+                .setPositiveButton(R.string.game_ok_dialog_button, (dialog, button) -> {})
+                .show();
+    }
+
+    private static class Coord {
+        private final int x;
+        private final int y;
 
         public Coord(int x, int y) {
             this.x = x;
