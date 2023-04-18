@@ -3,9 +3,15 @@ package step.learning.course;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.Context;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.os.VibratorManager;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.animation.Animation;
@@ -13,6 +19,11 @@ import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -23,11 +34,15 @@ public class GameActivity extends AppCompatActivity {
     private final int[][] prevCells = new int[CELLS_SIZE][CELLS_SIZE]; // предыдущий ход
     private final TextView[][] tvCells = new TextView[CELLS_SIZE][CELLS_SIZE]; // ссылки на ячейки поля
     private final Random random = new Random();
+    private final String BEST_SCORE_FILENAME = "bestscore.txt";
 
+    private boolean isNewGame;
+    private boolean continuePlaying;
     private int score;
     private int prevScore;
     private int bestScore;
     private int prevBestScore;
+    private String newBestScoreDialogMessage;
     private TextView tvScore;
     private TextView text;
     private TextView tvBestScore;
@@ -40,6 +55,7 @@ public class GameActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
+        newBestScoreDialogMessage = "";
         tvScore = findViewById(R.id.game_tv_score);
         text = findViewById(R.id.text);
         tvBestScore = findViewById(R.id.game_tv_best_score);
@@ -177,14 +193,23 @@ public class GameActivity extends AppCompatActivity {
         for (int i = 0; i < CELLS_SIZE; ++i) {
             for (int j = 0; j < CELLS_SIZE; ++j) {
                 cells[i][j] = 0;
+                prevCells[i][j] = 0;
             }
         }
+        loadBestScore();
+        tvBestScore.setText(getString(R.string.game_best_score, String.valueOf(bestScore)));
+        if (score == bestScore && score != 0) {
+            showNewBestScoreMessage();
+        }
+        newBestScoreDialogMessage = "";
+        isNewGame = true;
+        continuePlaying = false;
         score = 0;
         spawnCell(2);
         showField();
         text.setText(R.string.game_description);
     }
-    private boolean spawnCell(int n) {
+    private void spawnCell(int n) {
         // собираем данные о пустых ячейках
         List<Coord> coordinates = new ArrayList<>();
         for (int i = 0; i < CELLS_SIZE; ++i) {
@@ -194,9 +219,8 @@ public class GameActivity extends AppCompatActivity {
                 }
             }
         }
-        // проверяем есть ли пустые ячейки
+
         int cnt = coordinates.size();
-        if (cnt < n) return false;
 
         for (int i = 0; i < n; ++i) {
             // генерируем случайный индекс
@@ -209,10 +233,8 @@ public class GameActivity extends AppCompatActivity {
             // проигрываем анимацию для появившейся ячейки
             tvCells[x][y].startAnimation(spawnAnimation);
         }
-
-        return true;
     }
-    private boolean isGaveOver() {
+    private boolean isGameOver() {
         return !canMoveRight(cells) && !canMoveLeft(cells)
                 && !canMoveTop(cells) && !canMoveBottom(cells);
     }
@@ -234,10 +256,6 @@ public class GameActivity extends AppCompatActivity {
             }
         }
         return canMoveRight;
-       /*
-        Д.З. Реализовать проверку возможности хода вправо (без изменения состояния поля)
-        ** реализовать ходы и проверки по другим направлениям
-         */
     }
     public boolean canMoveLeft(int[][] cells) {
         boolean canMoveLeft = false;
@@ -293,9 +311,7 @@ public class GameActivity extends AppCompatActivity {
     // endregion
 
     // region [move functions]
-    private boolean moveRight() {
-        boolean isMoved = false ;    // [0002]->[0002], [0200]->[0002], [2020]->[0022]->[0004]
-
+    private void moveRight() {
         for( int i = 0; i < CELLS_SIZE; ++i ) {
             // сдвиги
             boolean wasReplace;
@@ -307,7 +323,6 @@ public class GameActivity extends AppCompatActivity {
                         cells[i][j] = cells[i][j - 1];
                         cells[i][j - 1] = 0;
                         wasReplace = true;
-                        isMoved = true;
                     }
                 }
             } while (wasReplace);
@@ -316,12 +331,8 @@ public class GameActivity extends AppCompatActivity {
             for (int j = CELLS_SIZE - 1; j > 0; --j) {  // [2202] -> [0222] -> [0204] -> [0024]
                 if (cells[i][j] == cells[i][j - 1] && cells[i][j] != 0) {  // соседние ячейки равны  [2222]
                     score += cells[i][j] + cells[i][j - 1] ;   // счет = сумма всех объединенных ячеек
-                    if (score > bestScore) {
-                        bestScore = score;
-                    }
                     cells[i][j] *= -2 ;  // [2224]; "-" - признак для анимации
                     cells[i][j - 1] = 0 ;   // [2204]
-                    isMoved = true ;
                 }
             }  // [0404]  при коллапсе может понадобиться дополнительное смещение
             for (int j = CELLS_SIZE - 1; j > 0; --j) {
@@ -337,11 +348,8 @@ public class GameActivity extends AppCompatActivity {
                 }
             } // [0044]
         }
-        return isMoved ;
     }
-    private boolean moveLeft() {
-        boolean isMoved = false ;
-
+    private void moveLeft() {
         for( int i = 0; i < CELLS_SIZE; ++i ) {
             // сдвиги
             boolean wasReplace;
@@ -352,7 +360,6 @@ public class GameActivity extends AppCompatActivity {
                         cells[i][j] = cells[i][j + 1];
                         cells[i][j + 1] = 0;
                         wasReplace = true;
-                        isMoved = true;
                     }
                 }
             } while (wasReplace);
@@ -361,12 +368,8 @@ public class GameActivity extends AppCompatActivity {
             for (int j = 0; j < CELLS_SIZE - 1; ++j) {
                 if (cells[i][j] == cells[i][j + 1] && cells[i][j] != 0) {
                     score += cells[i][j] + cells[i][j + 1];
-                    if (score > bestScore) {
-                        bestScore = score;
-                    }
                     cells[i][j] *= -2;
                     cells[i][j + 1] = 0;
-                    isMoved = true;
                 }
             }
             for (int j = 0; j < CELLS_SIZE - 1; ++j) {
@@ -382,11 +385,8 @@ public class GameActivity extends AppCompatActivity {
                 }
             }
         }
-        return isMoved;
     }
-    private boolean moveTop() {
-        boolean isMoved = false;
-
+    private void moveTop() {
         for (int j = 0; j < CELLS_SIZE; ++j) {
             // сдвиги
             boolean wasReplace;
@@ -397,7 +397,6 @@ public class GameActivity extends AppCompatActivity {
                         cells[i][j] = cells[i + 1][j];
                         cells[i + 1][j] = 0;
                         wasReplace = true;
-                        isMoved = true;
                     }
                 }
             } while (wasReplace);
@@ -406,12 +405,8 @@ public class GameActivity extends AppCompatActivity {
             for (int i = 0; i < CELLS_SIZE - 1; ++i) {
                 if (cells[i][j] == cells[i + 1][j] && cells[i][j] != 0) {
                     score += cells[i][j] + cells[i + 1][j];
-                    if (score > bestScore) {
-                        bestScore = score;
-                    }
                     cells[i][j] *= -2;
                     cells[i + 1][j] = 0;
-                    isMoved = true;
                 }
             }
             for (int i = 0; i < CELLS_SIZE - 1; ++i) {
@@ -427,11 +422,8 @@ public class GameActivity extends AppCompatActivity {
                 }
             }
         }
-        return isMoved;
     }
-    private boolean moveBottom() {
-        boolean isMoved = false;
-
+    private void moveBottom() {
         for (int j = 0; j < CELLS_SIZE; ++j) {
             // сдвиги
             boolean wasReplace;
@@ -442,7 +434,6 @@ public class GameActivity extends AppCompatActivity {
                         cells[i][j] = cells[i - 1][j];
                         cells[i - 1][j] = 0;
                         wasReplace = true;
-                        isMoved = true;
                     }
                 }
             } while (wasReplace);
@@ -451,12 +442,8 @@ public class GameActivity extends AppCompatActivity {
             for (int i = CELLS_SIZE - 1; i > 0; --i) {
                 if (cells[i][j] == cells[i - 1][j] && cells[i][j] != 0) {
                     score += cells[i][j] + cells[i - 1][j];
-                    if (score > bestScore) {
-                        bestScore = score;
-                    }
                     cells[i][j] *= -2;
                     cells[i - 1][j] = 0;
-                    isMoved = true;
                 }
             }
             for (int i = CELLS_SIZE - 1; i > 0; --i) {
@@ -472,7 +459,6 @@ public class GameActivity extends AppCompatActivity {
                 }
             }
         }
-        return isMoved;
     }
     // endregion
 
@@ -535,7 +521,15 @@ public class GameActivity extends AppCompatActivity {
             }
         }
         tvScore.setText(getString(R.string.game_score, String.valueOf(score)));
-        tvBestScore.setText(getString(R.string.game_best_score, String.valueOf(bestScore)));
+        if (score > bestScore) {
+            bestScore = score;
+            saveBestScore();
+            tvBestScore.setText(getString(R.string.game_best_score, String.valueOf(bestScore)));
+            newBestScoreDialogMessage = getString(R.string.game_new_best_score_dialog_message, String.valueOf(bestScore));
+        }
+        if (score >= 2048 && !continuePlaying) {
+            showWinMessage();
+        }
     }
 
     // Делаем копию текущего игрового поля и сохраняем ее в prevCells
@@ -566,15 +560,63 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
-    // Восстанавливаем предыдущее состояние игрового поля из prevCells
-    private void undoMove(View view) {
+    private void undo() {
+        if (isNewGame) return;
         for (int i = 0; i < CELLS_SIZE; i++) {
             System.arraycopy(prevCells[i], 0, cells[i], 0, CELLS_SIZE);
         }
         // Восстанавливаем другие переменные состояния игры
         score = prevScore;
         bestScore = prevBestScore;
+    }
+
+    // Восстанавливаем предыдущее состояние игрового поля из prevCells
+    private void undoMove(View view) {
+        undo();
         showField();
+    }
+    private void saveBestScore() {
+        try (FileOutputStream fileStream = openFileOutput(BEST_SCORE_FILENAME, Context.MODE_PRIVATE);
+             DataOutputStream writer = new DataOutputStream(fileStream)) {
+            writer.writeInt(bestScore);
+            writer.flush();
+        }
+        catch (IOException ex) {
+            Log.d("saveBestScore", ex.getMessage());
+        }
+    }
+    private void loadBestScore() {
+        try (FileInputStream fileInputStream = openFileInput(BEST_SCORE_FILENAME);
+             DataInputStream reader = new DataInputStream(fileInputStream)) {
+            bestScore = reader.readInt();
+        } catch (IOException ex) {
+            Log.d("loadBestScore", ex.getMessage());
+            bestScore = 0;
+        }
+    }
+    @SuppressLint("PrivateResource")
+    private void showWinMessage() {
+        new AlertDialog.Builder(this, com.google.android.material.R.style.Base_V14_ThemeOverlay_MaterialComponents_Dialog)
+                .setTitle(R.string.game_win_dialog_title)
+                .setMessage(R.string.game_win_dialog_message)
+                .setIcon(android.R.drawable.btn_star)
+                .setCancelable(false)
+                .setPositiveButton(R.string.game_yes_dialog_button, (dialog, button) -> continuePlaying = true)
+                .setNegativeButton(R.string.game_exit_dialog_button, (dialog, button) -> finish())
+                .setNeutralButton(R.string.game_new_dialog_button, (dialog, button) -> newGame(null))
+                .show();
+    }
+
+    @SuppressLint("PrivateResource")
+    private void showLoserMessage() {
+        new AlertDialog.Builder(this, com.google.android.material.R.style.Base_V14_ThemeOverlay_MaterialComponents_Dialog)
+                .setTitle(R.string.game_over_dialog_title)
+                .setMessage(getString(R.string.game_over_dialog_message, newBestScoreDialogMessage))
+                .setIcon(android.R.drawable.ic_delete)
+                .setCancelable(false)
+                .setPositiveButton(R.string.game_yes_dialog_button, (dialog, button) -> newGame(null))
+                .setNegativeButton(R.string.game_exit_dialog_button, (dialog, button) -> finish())
+                .show();
     }
 
     private class Coord {

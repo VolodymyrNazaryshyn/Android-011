@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">Android-011</string>
 
+    <string name="button_chat_text">Chat</string>
+
     <!-- Main Activity -->
     <string name="title_text">Android basics</string>
     <string name="button_calc_text">Calculator</string>
@@ -9,7 +11,14 @@
     <!-- Game 2048 Activity -->
     <string name="game_title">2048</string>
     <string name="game_description">Join the numbers and get to 2048</string>
-    <string name="game_over">Game over</string>
+    <string name="game_win_dialog_title">You win!</string>
+    <string name="game_win_dialog_message">You collect 2048 and win!\nDo you want to continue?</string>
+    <string name="game_yes_dialog_button">Yes</string>
+    <string name="game_new_dialog_button">New game</string>
+    <string name="game_exit_dialog_button">No</string>
+    <string name="game_ok_dialog_button">Ok</string>
+    <string name="game_over_dialog_title">You lose!</string>
+    <string name="game_over_dialog_message">Game over! %s\nDo you want to start new game?</string>
     <string name="game_score">score\n%s</string>
     <string name="game_best_score">best\n%s</string>
     <string name="game_new_btn">new</string>
@@ -38,7 +47,7 @@
     <string name="calc_btn_plus_text">\u002B</string>
     <string name="calc_btn_plus_minus_text">\u207A\u2215\u208B</string>
     <string name="calc_btn_comma_text">,</string>
-    <string name="calc_btn_equal_text">\uFF1D</string>
+    <string name="calc_btn_equal_text" tools:ignore="Typos">\uFF1D</string>
     <string name="calc_btn_0_text">\u0298</string>
     <string name="calc_btn_1_text">1</string>
     <string name="calc_btn_2_text">2</string>
