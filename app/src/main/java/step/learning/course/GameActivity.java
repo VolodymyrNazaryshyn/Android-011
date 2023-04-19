@@ -68,11 +68,7 @@ public class GameActivity extends AppCompatActivity {
         for (int i = 0; i < CELLS_SIZE; ++i) {
             for (int j = 0; j < CELLS_SIZE; ++j) {
                 tvCells[i][j] = findViewById( // R.id.game_cell_12);
-                        getResources().getIdentifier(
-                                "game_cell_" + i + j,
-                                "id",
-                                getPackageName()
-                        )
+                        getResources().getIdentifier("game_cell_" + i + j, "id", getPackageName())
                 );
             }
         }
@@ -92,18 +88,10 @@ public class GameActivity extends AppCompatActivity {
                                     moveRight();
                                     spawnCell(1);
                                     showField();
-                                    Toast.makeText(
-                                                    GameActivity.this,
-                                                    "Right",
-                                                    Toast.LENGTH_SHORT)
-                                            .show();
+                                    Toast.makeText(GameActivity.this, "Right", Toast.LENGTH_SHORT).show();
                                 }
                                 else {
-                                    Toast.makeText(
-                                                    GameActivity.this,
-                                                    "No Right Move",
-                                                    Toast.LENGTH_SHORT)
-                                            .show();
+                                    Toast.makeText(GameActivity.this, "No Right Move", Toast.LENGTH_SHORT).show();
                                     vibrate();
                                 }
                             }
@@ -119,18 +107,10 @@ public class GameActivity extends AppCompatActivity {
                                     moveLeft();
                                     spawnCell(1);
                                     showField();
-                                    Toast.makeText(
-                                                    GameActivity.this,
-                                                    "Left",
-                                                    Toast.LENGTH_SHORT)
-                                            .show();
+                                    Toast.makeText(GameActivity.this, "Left", Toast.LENGTH_SHORT).show();
                                 }
                                 else {
-                                    Toast.makeText(
-                                                    GameActivity.this,
-                                                    "No Left Move",
-                                                    Toast.LENGTH_SHORT)
-                                            .show();
+                                    Toast.makeText(GameActivity.this, "No Left Move", Toast.LENGTH_SHORT).show();
                                     vibrate();
                                 }
                             }
@@ -146,18 +126,10 @@ public class GameActivity extends AppCompatActivity {
                                     moveTop();
                                     spawnCell(1);
                                     showField();
-                                    Toast.makeText(
-                                                    GameActivity.this,
-                                                    "Top",
-                                                    Toast.LENGTH_SHORT)
-                                            .show();
+                                    Toast.makeText(GameActivity.this, "Top", Toast.LENGTH_SHORT).show();
                                 }
                                 else {
-                                    Toast.makeText(
-                                                    GameActivity.this,
-                                                    "No Top Move",
-                                                    Toast.LENGTH_SHORT)
-                                            .show();
+                                    Toast.makeText(GameActivity.this, "No Top Move", Toast.LENGTH_SHORT).show();
                                     vibrate();
                                 }
                             }
@@ -173,18 +145,10 @@ public class GameActivity extends AppCompatActivity {
                                     moveBottom();
                                     spawnCell(1);
                                     showField();
-                                    Toast.makeText(
-                                                    GameActivity.this,
-                                                    "Bottom",
-                                                    Toast.LENGTH_SHORT)
-                                            .show();
+                                    Toast.makeText(GameActivity.this, "Bottom", Toast.LENGTH_SHORT).show();
                                 }
                                 else {
-                                    Toast.makeText(
-                                                    GameActivity.this,
-                                                    "No Bottom Move",
-                                                    Toast.LENGTH_SHORT)
-                                            .show();
+                                    Toast.makeText(GameActivity.this, "No Bottom Move", Toast.LENGTH_SHORT).show();
                                     vibrate();
                                 }
                             }
@@ -207,7 +171,7 @@ public class GameActivity extends AppCompatActivity {
             vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         }
 
-        long[] vibratePattern = {0, 500};
+        long[] vibratePattern = {0, 100};
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             vibrator.vibrate(
@@ -499,53 +463,36 @@ public class GameActivity extends AppCompatActivity {
             for (int j = 0; j < CELLS_SIZE; ++j) {
                 tvCells[i][j].setText(String.valueOf(cells[i][j]));
                 float textSize = resources.getDimension( // R.dimen.txt_size_game_cell_4096
-                        resources.getIdentifier(
-                                "txt_size_game_cell_" + cells[i][j],
-                                "dimen",
-                                packageName
-                        ));
+                        resources.getIdentifier("txt_size_game_cell_" + cells[i][j], "dimen", packageName)
+                );
                 tvCells[i][j].setTextSize(TypedValue.COMPLEX_UNIT_SP, textSize);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     tvCells[i][j].setTextAppearance( // R.style.GameCell_16
-                            resources.getIdentifier(
-                                    "GameCell_" + cells[i][j],
-                                    "style",
-                                    packageName
-                            )
+                            resources.getIdentifier("GameCell_" + cells[i][j], "style", packageName)
                     );
                 }
                 else {
                     tvCells[i][j].setTextColor( // R.style.GameCell_16
-                            resources.getColor(resources.getIdentifier(
-                                    "game_fg_" + cells[i][j],
-                                    "color",
-                                    packageName
-                            ))
+                            resources.getColor(resources.getIdentifier("game_fg_" + cells[i][j], "color", packageName))
                     );
                 }
                 // setTextAppearance не "подтягивает" фоновый цвет
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     tvCells[i][j].setBackgroundColor(
                             resources.getColor( // R.color.game_bg_16,
-                                    resources.getIdentifier(
-                                            "game_bg_" + cells[i][j],
-                                            "color",
-                                            packageName
-                                    ),
-                                    getTheme()
+                                    resources.getIdentifier("game_bg_" + cells[i][j], "color", packageName), getTheme()
                             )
                     );
                 }
                 else {
                     tvCells[i][j].setBackgroundColor(
                             resources.getColor( // R.color.game_bg_16,
-                                    resources.getIdentifier(
-                                            "game_bg_" + cells[i][j],
-                                            "color",
-                                            packageName
-                                    )
+                                    resources.getIdentifier("game_bg_" + cells[i][j], "color", packageName)
                             )
                     );
+                }
+                if (tvCells[i][j].getText().toString().equals("2048") && !continuePlaying) {
+                    showWinMessage();
                 }
             }
         }
@@ -555,9 +502,6 @@ public class GameActivity extends AppCompatActivity {
             saveBestScore();
             tvBestScore.setText(getString(R.string.game_best_score, String.valueOf(bestScore)));
             newBestScoreDialogMessage = getString(R.string.game_new_best_score_dialog_message, String.valueOf(bestScore));
-        }
-        if (score >= 2048 && !continuePlaying) {
-            showWinMessage();
         }
     }
 
@@ -645,6 +589,7 @@ public class GameActivity extends AppCompatActivity {
                 .setCancelable(false)
                 .setPositiveButton(R.string.game_yes_dialog_button, (dialog, button) -> newGame(null))
                 .setNegativeButton(R.string.game_exit_dialog_button, (dialog, button) -> finish())
+                .setNeutralButton(R.string.game_undo_dialog_button, (dialog, button) -> undoMove(null))
                 .show();
     }
 

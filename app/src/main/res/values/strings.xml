@@ -17,6 +17,7 @@
     <string name="game_new_dialog_button">New game</string>
     <string name="game_exit_dialog_button">No</string>
     <string name="game_ok_dialog_button">Ok</string>
+    <string name="game_undo_dialog_button">Undo</string>
     <string name="game_over_dialog_title">You lose!</string>
     <string name="game_over_dialog_message">Game over! %s\nDo you want to start new game?</string>
     <string name="game_score">score\n%s</string>
