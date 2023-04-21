@@ -20,6 +20,7 @@ import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -84,9 +85,8 @@ public class ChatActivity extends AppCompatActivity {
                             new ChatMessage(data.getJSONObject(i))
                     );
                 }
-                /* Д.З. Реализовать сортировку сообщений - последние (по времени) - идут снизу
-                    Реализовать отображение даты-времени сообщения
-                */
+                // добавляем сортировку сообщений - последние (по времени) - идут снизу
+                Collections.reverse(chatMessages);
             }
             else {
                 Log.d("parseChatMessages", "Content has no 'data' " + loadedContent);
@@ -99,8 +99,14 @@ public class ChatActivity extends AppCompatActivity {
     }
     private void showChatMessages() {
         StringBuilder sb = new StringBuilder();
+
         for (ChatMessage message : chatMessages) {
-            sb.append(message.getAuthor()).append(':').append(message.getTxt()).append('\n');
+            // Реализуем отображение даты-времени сообщения
+            String moment = ChatMessage.chatMomentFormat.format(message.getMoment());
+
+            sb.append(message.getAuthor()).append(':')
+                    .append(message.getTxt()).append("\t\t")
+                    .append(moment).append('\n');
         }
         tvChat.setText(sb.toString());
     }

@@ -1,14 +1,17 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Android-011</string>
 
-    <string name="button_chat_text">Chat</string>
-
-    <!-- Main Activity -->
+    <!-- region Main Activity -->
     <string name="title_text">Android basics</string>
     <string name="button_calc_text">Calculator</string>
     <string name="button_game_text">Game 2048</string>
+    <!-- endregion -->
 
-    <!-- Game 2048 Activity -->
+    <!-- region Chat Activity -->
+    <string name="button_chat_text">Chat</string>
+    <!-- endregion Chat Activity -->
+
+    <!-- region Game 2048 Activity -->
     <string name="game_title">2048</string>
     <string name="game_description">Join the numbers and get to 2048</string>
     <string name="game_win_dialog_title">You win!</string>
@@ -26,8 +29,9 @@
     <string name="game_new_best_score_dialog_message">New best score: %s</string>
     <string name="game_new_btn">new</string>
     <string name="game_undo_btn">undo</string>
+    <!-- endregion -->
 
-    <!-- Calc Activity -->
+    <!-- region Calc Activity -->
     <string name="calc_root_history">\u221A(%s)</string>
     <string name="calc_square_history">(%s)² =</string>
     <string name="calc_inverse_history">\u215F\u200A(%s) =</string>
@@ -63,5 +67,6 @@
     <string name="calc_btn_9_text">9</string>
     <string name="calc_minus_sign">\u2212</string>
     <string name="calc_comma_sign">\u002C</string>
+    <!-- endregion -->
 
 </resources>
