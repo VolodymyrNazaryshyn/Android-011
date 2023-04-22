@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Chat Activity -->
+    <color name="chat_msg_bg_my">#78F4FA</color>
+    <color name="chat_msg_bg_other">#D5DC73</color>
+
     <!-- Game Activity -->
     <color name="game_field_bg">#AC9F7E</color>
     <color name="game_bg_0">#BEAFA0</color>
