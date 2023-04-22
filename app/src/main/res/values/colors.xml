@@ -3,6 +3,7 @@
     <!-- Chat Activity -->
     <color name="chat_msg_bg_my">#78F4FA</color>
     <color name="chat_msg_bg_other">#D5DC73</color>
+    <color name="chat_msg_bg_date">#BFBCDD</color>
 
     <!-- Game Activity -->
     <color name="game_field_bg">#AC9F7E</color>

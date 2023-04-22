@@ -3,11 +3,20 @@ package step.learning.course;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.content.res.AppCompatResources;
 
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Layout;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.AlignmentSpan;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.StyleSpan;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -112,8 +121,6 @@ public class ChatActivity extends AppCompatActivity {
                     }
                 }
                 if (wasNewMessage) runOnUiThread(this::showChatMessages);
-                // добавляем сортировку сообщений - последние (по времени) - идут снизу
-                //Collections.reverse(chatMessages);
             }
             else {
                 Log.d("parseChatMessages", "Content has no 'data' " + loadedContent);
@@ -127,10 +134,12 @@ public class ChatActivity extends AppCompatActivity {
         Drawable otherBg = AppCompatResources.getDrawable(
                 getApplicationContext(), R.drawable.chat_msg_bg_other
         );
-        LinearLayout.LayoutParams marginOther = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT);
-        marginOther.setMargins(10, 10, 10, 10);
+        Drawable myBg = AppCompatResources.getDrawable(
+                getApplicationContext(), R.drawable.chat_msg_bg_my
+        );
+        Drawable dateBg = AppCompatResources.getDrawable(
+                getApplicationContext(), R.drawable.chat_msg_date
+        );
         boolean wasNesMessage = false;
         synchronized (chatMessages) {
             for (ChatMessage message : chatMessages) {
@@ -138,8 +147,24 @@ public class ChatActivity extends AppCompatActivity {
                     continue; // пропускаем его
                 }
 
+                // tvMessageDate - дата отправки сообщения
+                TextView tvMessageDate = new TextView(ChatActivity.this);
+                tvMessageDate.setBackground(dateBg);
+                tvMessageDate.setGravity(Gravity.CENTER);
+                LinearLayout.LayoutParams dateParams = (LinearLayout.LayoutParams) tvMessageDate.getLayoutParams();
+                if (dateParams == null) {
+                    dateParams = new LinearLayout.LayoutParams(
+                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT);
+                }
+                dateParams.width = 200;
+                dateParams.gravity = Gravity.CENTER; // установка выравнивания по центру
+                tvMessageDate.setLayoutParams(dateParams);
+                String momentDate = ChatMessage.chatMomentDateFormat.format(message.getMoment());
+                tvMessageDate.setText(momentDate);
+                chatContainer.addView(tvMessageDate);
+
                 TextView tvMessage = new TextView(ChatActivity.this);
-                tvMessage.setText(message.toViewString());
                 /* поле Tag традиционно используется для добавления пользовательской информации -
                  * произвольных объектов, связанных с данным представлением (View)
                  * Поместив в это поле ссылку на сообщение, мы можем использовать ее в обработчиках
@@ -147,12 +172,87 @@ public class ChatActivity extends AppCompatActivity {
                  */
                 tvMessage.setTag(message);  // связываем View с ChatMessage
                 message.setView(tvMessage); // и наоборот
+                // стилизуем: если автор сообщения совпадает с NikName - сообщение "мое"
+                if (message.getAuthor().contentEquals(etAuthor.getText())) {
+                    String textMy = message.toViewMyMessages();
+                    SpannableString spannableString = new SpannableString(textMy);
 
-                // стилизуем
-                tvMessage.setBackground(otherBg);
-                tvMessage.setLayoutParams(marginOther);
+                    // Установить обычный шрифт для первой строки
+                    spannableString.setSpan(
+                            new StyleSpan(Typeface.NORMAL),
+                            0,
+                            textMy.indexOf('\n'),
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                    // Установить меньший шрифт и выравнивание по правому краю для второй строки
+                    spannableString.setSpan(
+                            new RelativeSizeSpan(0.8f),
+                            textMy.lastIndexOf('\n') + 1,
+                            textMy.length(),
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                    spannableString.setSpan(
+                            new AlignmentSpan.Standard(Layout.Alignment.ALIGN_OPPOSITE),
+                            textMy.lastIndexOf('\n') + 1,
+                            textMy.length(),
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                    tvMessage.setText(spannableString);
+
+                    tvMessage.setBackground(myBg);
+                    LinearLayout.LayoutParams myParams = (LinearLayout.LayoutParams) tvMessage.getLayoutParams();
+                    if (myParams == null) {
+                        myParams = new LinearLayout.LayoutParams(
+                                LinearLayout.LayoutParams.WRAP_CONTENT,
+                                LinearLayout.LayoutParams.WRAP_CONTENT);
+                    }
+                    myParams.gravity = Gravity.RIGHT; // установка правого выравнивания
+                    myParams.setMargins(10, 10, 40, 10);
+                    tvMessage.setLayoutParams(myParams);
+                }
+                else { // если автор сообщения не совпадает с NikName - сообщение "чужое"
+                    String textOthers = message.toViewOtherMessages();
+                    SpannableString spannableString = new SpannableString(textOthers);
+
+                    // Установить жирный шрифт для первой строки
+                    spannableString.setSpan(
+                            new StyleSpan(Typeface.BOLD),
+                            0,
+                            textOthers.indexOf('\n'),
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                    // Установить обычный шрифт для второй строки
+                    spannableString.setSpan(
+                            new StyleSpan(Typeface.NORMAL),
+                            textOthers.indexOf('\n') + 1,
+                            textOthers.lastIndexOf('\n'),
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                    // Установить меньший шрифт и выравнивание по правому краю для третьей строки
+                    spannableString.setSpan(
+                            new RelativeSizeSpan(0.8f),
+                            textOthers.lastIndexOf('\n') + 1,
+                            textOthers.length(),
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                    spannableString.setSpan(
+                            new AlignmentSpan.Standard(Layout.Alignment.ALIGN_OPPOSITE),
+                            textOthers.lastIndexOf('\n') + 1,
+                            textOthers.length(),
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                    tvMessage.setText(spannableString);
+
+                    tvMessage.setBackground(otherBg);
+                    LinearLayout.LayoutParams otherParams = new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.WRAP_CONTENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT);
+                    otherParams.setMargins(40, 10, 10, 10);
+                    tvMessage.setLayoutParams(otherParams);
+                }
                 tvMessage.setTextSize(18);
-                tvMessage.setPadding(10, 7, 10, 7);
+                tvMessage.setMinWidth(300);
+                tvMessage.setPadding(20, 10, 20, 10);
 
                 // добавляем сообщение в контейнер
                 chatContainer.addView(tvMessage);
@@ -162,9 +262,6 @@ public class ChatActivity extends AppCompatActivity {
                 // даем команду ScrollView прокрутить контент вниз
                 svContainer.post(() -> svContainer.fullScroll(View.FOCUS_DOWN));
             }
-            /*
-            Д.З.
-             */
         }
     }
     private void sendMessageClick( View view ) {
@@ -236,6 +333,13 @@ public class ChatActivity extends AppCompatActivity {
 
         private static final SimpleDateFormat chatMomentFormat = // "Apr 19, 2023 4:41:35 PM"
                 new SimpleDateFormat("MMM dd, yyyy KK:mm:ss a", Locale.US);
+
+        private static final SimpleDateFormat chatMomentDateFormat = // "Apr 19"
+                new SimpleDateFormat("MMM dd", Locale.US);
+
+        private static final SimpleDateFormat chatMomentTimeFormat = // "18:44"
+                new SimpleDateFormat("HH:mm");
+
         public ChatMessage() {
         }
 
@@ -267,11 +371,15 @@ public class ChatActivity extends AppCompatActivity {
             sb.append("}");
             return sb.toString();
         }
-        public String toViewString() {
-            // Реализуем отображение даты-времени сообщения
-            String moment = ChatMessage.chatMomentFormat.format(this.getMoment());
 
-            return String.format("%s: %s - %s", this.getAuthor(), this.getTxt(), moment);
+        public String toViewOtherMessages() {
+            String momentTime = ChatMessage.chatMomentTimeFormat.format(this.getMoment());
+            return String.format("%s\n%s\n%s", this.getAuthor(), this.getTxt(), momentTime);
+        }
+
+        public String toViewMyMessages() {
+            String momentTime = ChatMessage.chatMomentTimeFormat.format(this.getMoment());
+            return String.format("%s\n%s", this.getTxt(), momentTime);
         }
 
         // region Accessors
