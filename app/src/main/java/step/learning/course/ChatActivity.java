@@ -1,12 +1,25 @@
 package step.learning.course;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
+import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Layout;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -45,24 +58,36 @@ import java.util.UUID;
 
 public class ChatActivity extends AppCompatActivity {
     private final String CHAT_URL = "https://diorama-chat.ew.r.appspot.com/story";
+    private final String CHANNEL_ID = "chat_notification_channel"; // id канала уведомлений
+    private final int POST_NOTIFICATION_REQUEST_CODE = 234; // код (случайный) для запроса разрешения на отправку уведомлений
     private EditText etAuthor ;
     private EditText etMessage ;
     private LinearLayout chatContainer;
     private ScrollView svContainer;
     private final List<ChatMessage> chatMessages = Collections.synchronizedList(new ArrayList<>());
+    private MediaPlayer incomingMessagePlayer;
+    private Handler handler; // планировщик задач в одном потоке
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
         setContentView( R.layout.activity_chat );
 
+        handler = new Handler();
+
         etAuthor = findViewById( R.id.chat_et_author ) ;
         etMessage = findViewById( R.id.chat_et_message ) ;
         chatContainer = findViewById(R.id.chat_container);
         svContainer = findViewById(R.id.sv_container);
+        incomingMessagePlayer = MediaPlayer.create(this, R.raw.sound_1);
         findViewById( R.id.chat_button_send ).setOnClickListener( this::sendMessageClick ) ;
 
+        handler.post(this::updateChat);
+    }
+
+    private void updateChat() {
         new Thread(this::getChatMessages).start();
+        handler.postDelayed(this::updateChat, 3000); // отложенный запуск
     }
 
     private void getChatMessages() {
@@ -261,6 +286,12 @@ public class ChatActivity extends AppCompatActivity {
             if (wasNesMessage) {
                 // даем команду ScrollView прокрутить контент вниз
                 svContainer.post(() -> svContainer.fullScroll(View.FOCUS_DOWN));
+                // проигрываем звук нового сообщения
+                AudioManager am = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+                if (am.getRingerMode() == AudioManager.RINGER_MODE_NORMAL) {
+                    incomingMessagePlayer.start();
+                }
+                showNotification();
             }
         }
     }
@@ -315,6 +346,73 @@ public class ChatActivity extends AppCompatActivity {
         }
         catch (Exception ex) {
             Log.e("postChatMessage", ex.getMessage());
+        }
+    }
+
+    private void showNotification() {
+        /*
+        Notification - системное уведомление, остающееся в устройстве
+        Использование уведомлений изменялось с разными API:
+        В новых версиях добавилось понятие канала уведомлений, в старых его не было
+         */
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Регистрация канала уведомлений. Нужны названия канала, его описание, а также
+            // идентификатор
+            NotificationChannel channel = new NotificationChannel(
+                    CHANNEL_ID,
+                    getString(R.string.chat_channel_name),
+                    NotificationManager.IMPORTANCE_DEFAULT
+            );
+            channel.setDescription(getString(R.string.chat_channel_description));
+            /*
+            Канал регистрируется один раз, после регистрации изменять настройки нельзя
+             */
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(channel);
+        }
+        // Формирование и отправка уведомления
+        NotificationCompat.Builder notificationBuilder =
+                new NotificationCompat.Builder(ChatActivity.this, CHANNEL_ID)
+                        .setSmallIcon(android.R.drawable.btn_star_big_on)
+                        .setContentTitle("Chat")
+                        .setContentText("New incoming message")
+                        .setPriority(NotificationCompat.PRIORITY_HIGH);
+
+        Notification notification = notificationBuilder.build();
+
+        NotificationManagerCompat managerCompat = // уведомление - системное, manager - посредник между приложением и системой
+                NotificationManagerCompat.from(this);
+        // managerCompat.notify(105, notification); // Missing permission
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Проверяем наличие разрешений на отправку уведомлений
+            if (ActivityCompat.checkSelfPermission(
+                    this, android.Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                // Запускаем диалог запроса разрешения
+                ActivityCompat.requestPermissions(
+                        ChatActivity.this,
+                        new String[] {
+                                android.Manifest.permission.POST_NOTIFICATIONS
+                        },
+                        POST_NOTIFICATION_REQUEST_CODE // код запроса - будет содержаться в ответе пользователя
+                );
+                // диалог запускается асинхронно, когда он закроется активность получит
+                // событие onRequestPermissionsResult, обработчик которого нужно перегрузить в данной активности
+                return; // предотвратит отправку сообщения если нет разрешения
+            }
+        }
+        managerCompat.notify(
+                105, // это значение будет передано в обратной связи от уведомления
+                notification);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == POST_NOTIFICATION_REQUEST_CODE) {
+            // Обработка результата ответа пользователя
+            // String[] permissions - запрошенные разрешения
+            // int[] grandResults - результаты от пользователя
         }
     }
 
@@ -451,6 +549,22 @@ public class ChatActivity extends AppCompatActivity {
          */
     }
 }
+/*
+Работа со звуками (проигрывание звукового файла)
+1. Ресурс - относится к ресурсам без категории - "raw"
+ - создаем в ресурсах папку "raw"
+ - копируем/переносим в нее звуковой файл
+2. Объект
+ - private MediaPlayer incomingMessagePlayer;
+ - incomingMessagePlayer = MediaPlayer.create(this, R.raw.sound_1);
+3. Использование
+ - incomingMessagePlayer.start();
+ - Контроль беззвучных режимов устройства:
+ AudioManager am = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+ if (am.getRingerMode() == AudioManager.RINGER_MODE_NORMAL) {
+     incomingMessagePlayer.start();
+ }
+ */
 /*
 Работа с Интернет
 java.net.URL - основной класс (аналог File для файлов)

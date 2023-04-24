@@ -5,11 +5,8 @@
     <string name="title_text">Android basics</string>
     <string name="button_calc_text">Calculator</string>
     <string name="button_game_text">Game 2048</string>
-    <!-- endregion -->
-
-    <!-- region Chat Activity -->
     <string name="button_chat_text">Chat</string>
-    <!-- endregion Chat Activity -->
+    <!-- endregion -->
 
     <!-- region Game 2048 Activity -->
     <string name="game_title">2048</string>
@@ -68,5 +65,10 @@
     <string name="calc_minus_sign">\u2212</string>
     <string name="calc_comma_sign">\u002C</string>
     <!-- endregion -->
+
+    <!-- region Chat Activity -->
+    <string name="chat_channel_name">Chat notification channel</string>
+    <string name="chat_channel_description">Android-011 App. Chat notification channel</string>
+    <!-- endregion Chat Activity -->
 
 </resources>
